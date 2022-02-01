@@ -26,7 +26,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.4.0","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]},{"title":"0.4","items":["`0.4.0` 디시콘 검색 기능을 지원합니다"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.4.1","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]},{"title":"0.4","items":["`0.4.0` 디시콘 검색 기능을 지원합니다","`0.4.1` 밝은 테마를 지원합니다","`0.4.1` 디시콘으로 답장을 지원합니다"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -59,6 +59,9 @@ module.exports = (() => {
     DiscordModules: { React, SelectedChannelStore },
   } = Library;
   const DCConBaseURL = "https://dcimg5.dcinside.com/dccon.php?no=";
+
+  window.DiscordModules = WebpackModules;
+  window.SelectedChannelStore = SelectedChannelStore;
 
   const { saveData, loadData } = window.BdApi;
   const { toggleExpressionPicker } = WebpackModules.getByProps("toggleExpressionPicker");
@@ -270,7 +273,7 @@ module.exports = (() => {
     const sendMedia = async (con, close = true) => {
       const image = await getDCConImage(con);
 
-      WebpackModules.getByProps("upload").instantBatchUpload(SelectedChannelStore.getChannelId(), [image], 0);
+      WebpackModules.getByProps("instantBatchUpload").upload(SelectedChannelStore.getChannelId(), image, 0, "", false, `dccon.${con.ext}`);
 
       if (close) {
         WebpackModules.getByProps("closeExpressionPicker").closeExpressionPicker();
@@ -513,7 +516,8 @@ module.exports = (() => {
           align-items: center;
           gap: 10px;
 
-          background-color: #202225;
+          background-origin: content-box;
+          background-color: var(--background-tertiary);
           padding: 7px;
 
           overflow: hidden scroll;
