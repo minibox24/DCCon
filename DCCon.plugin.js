@@ -26,7 +26,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.4.1","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]},{"title":"0.4","items":["`0.4.0` 디시콘 검색 기능을 지원합니다","`0.4.1` 밝은 테마를 지원합니다","`0.4.1` 디시콘으로 답장을 지원합니다"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.5.0","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]},{"title":"0.4","items":["`0.4.0` 디시콘 검색 기능을 지원합니다","`0.4.1` 밝은 테마를 지원합니다","`0.4.1` 디시콘으로 답장을 지원합니다","`0.4.2` 최적화 작업"]},{"title":"0.5","items":["`0.5.0` 설정 페이지가 개선되었습니다"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -58,16 +58,16 @@ module.exports = (() => {
     PluginUtilities,
     DiscordModules: { React, SelectedChannelStore },
   } = Library;
+
   const DCConBaseURL = "https://dcimg5.dcinside.com/dccon.php?no=";
-
-  window.DiscordModules = WebpackModules;
-  window.SelectedChannelStore = SelectedChannelStore;
-
   const { saveData, loadData } = window.BdApi;
-  const { toggleExpressionPicker } = WebpackModules.getByProps("toggleExpressionPicker");
-  const ExpressionPicker = WebpackModules.getModule((e) => e.type?.displayName === "ExpressionPicker");
-  const { ScrollerAuto: Scroller } = WebpackModules.getByProps("ScrollerAuto");
   const request = require("request");
+
+  const ExpressionPicker = WebpackModules.getModule((e) => e.type?.displayName === "ExpressionPicker");
+  const { toggleExpressionPicker } = WebpackModules.getByProps("toggleExpressionPicker");
+  const { ScrollerAuto: Scroller } = WebpackModules.getByProps("ScrollerAuto");
+
+  window.WebpackModules = WebpackModules;
 
   const class_modules = {
     gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
@@ -75,6 +75,11 @@ module.exports = (() => {
     flex: WebpackModules.getByProps("flex", "alignStart", "alignEnd"),
     container: WebpackModules.getByProps("container", "inner", "pointer"),
     icon: WebpackModules.getByProps("icon", "visible", "richTag"),
+    title: WebpackModules.getByProps("title", "h1", "h2"),
+    button: WebpackModules.getByProps("borderBrand", "colorBrand", "transitionDuration"),
+    nav: WebpackModules.getByProps("nav", "navButton", "navItem"),
+    divider1: WebpackModules.getAllByProps("divider").filter((x) => Object.keys(x).length == 1)[1],
+    divider2: WebpackModules.getByProps("dividerDefault"),
   };
 
   const classes = {
@@ -108,6 +113,28 @@ module.exports = (() => {
       icon: class_modules.icon.icon,
       visible: class_modules.icon.visible,
     },
+    text: {
+      h1: class_modules.title.h1,
+      defaultColor: class_modules.title.defaultColor,
+    },
+    button: {
+      button: class_modules.button.button,
+      color: class_modules.button.colorBrand,
+      looks: class_modules.button.lookFilled,
+      size: class_modules.button.sizeSmall,
+      contents: class_modules.button.contents,
+      colorRed: class_modules.button.colorRed,
+    },
+    nav: {
+      list: class_modules.nav.navList,
+      button: class_modules.nav.navButton,
+      item: class_modules.nav.navItem,
+      active: class_modules.nav.navButtonActive,
+    },
+    divider: {
+      divider: class_modules.divider1.divider,
+      dividerDefault: class_modules.divider2.dividerDefault,
+    },
   };
 
   window.WebpackModules = WebpackModules;
@@ -126,7 +153,20 @@ module.exports = (() => {
         (err, _, body) => {
           if (err) reject(err);
 
-          resolve(JSON.parse(body));
+          const original = JSON.parse(body);
+
+          const info = {
+            package_idx: original.info.package_idx,
+            title: original.info.title,
+            main_img_path: original.info.main_img_path,
+            list_img_path: original.info.list_img_path,
+          };
+
+          const detail = original.detail.map((x) => {
+            return { idx: x.idx, title: x.title, ext: x.ext, path: x.path };
+          });
+
+          resolve({ info, detail });
         }
       );
     });
@@ -205,7 +245,8 @@ module.exports = (() => {
   };
 
   const Category = (props) => {
-    const [expanded, setExpanded] = React.useState(props.expandData[props.idx] ?? true);
+    const defaultExpanded = props.expandData[props.idx] ?? true;
+    const [expanded, setExpanded] = React.useState(defaultExpanded);
     const rootRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -213,6 +254,7 @@ module.exports = (() => {
     }, []);
 
     React.useEffect(() => {
+      if (expanded === defaultExpanded) return;
       props.setExpanded(props.idx, expanded);
     }, [expanded]);
 
@@ -221,11 +263,6 @@ module.exports = (() => {
       {
         ref: rootRef,
         className: "bd-emote-category dccon-category",
-        style: {
-          display: "flex",
-          justifyContent: "space-between",
-          flexFlow: "row wrap",
-        },
       },
       React.createElement(
         "div",
@@ -299,7 +336,7 @@ module.exports = (() => {
             sendMedia(con, !event.shiftKey);
           },
         },
-        React.createElement("img", { src: DCConBaseURL + con.path })
+        React.createElement("img", { src: DCConBaseURL + con.path, loading: "lazy" })
       )
     );
   };
@@ -371,6 +408,7 @@ module.exports = (() => {
                   onClick: () => {
                     setQuery("");
                   },
+                  style: { marginRight: 7 },
                 },
                 React.createElement(
                   "div",
@@ -489,8 +527,27 @@ module.exports = (() => {
     ]);
   };
 
-  const Details = (props) => {
-    return React.createElement("details", {}, [React.createElement("summary", {}, props.summary), props.children]);
+  const Button = (props) => {
+    return React.createElement(
+      "button",
+      {
+        type: "button",
+        className: `${classes.button.button} ${props.color ?? classes.button.color} ${classes.button.looks} ${classes.button.size}`,
+        tabindex: -1,
+        onClick: props.onClick,
+        disabled: props.disabled,
+        style: { ...props.style },
+      },
+      React.createElement("div", { className: classes.button.content }, props.text)
+    );
+  };
+
+  const Display = (props) => {
+    return React.createElement(
+      "div",
+      { style: { backgroundColor: "var(--background-secondary)", padding: 10, borderRadius: 10 } },
+      React.createElement(Scroller, { style: { height: "30vh", borderRadius: 10 } }, props.children)
+    );
   };
 
   return class DCCon extends Plugin {
@@ -503,6 +560,12 @@ module.exports = (() => {
 
         .bd-emote-menu img {
           -webkit-user-drag: none;
+        }
+
+        .dccon-category {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: space-between;
         }
 
         .dccon-category::after {
@@ -530,8 +593,8 @@ module.exports = (() => {
         }
 
         .dccon-category-item {
-          padding: 5px;
           width: 70px;
+          padding: 2px;
 
           display: flex;
           justify-content: center;
@@ -542,6 +605,41 @@ module.exports = (() => {
 
         .dccon-category-item:hover {
           background-color: #4f545c;
+        }
+
+        .cards {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .card {
+          display: flex;
+          background-color: var(--background-accent);
+          border-radius: 10px;
+
+          width: 98%;
+          height: 100px;
+        }
+      
+        .card img {
+          width: 100px;
+          height: 100px;
+        }
+
+        .card-content {
+          display: flex;
+          flex-direction: column;
+
+          padding: 10px;
+          width: 100%;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
       `
       );
 
@@ -620,83 +718,237 @@ module.exports = (() => {
     }
 
     getSettingsPanel() {
-      return React.createElement(() => {
-        const [cons, setCons] = React.useState(this.cons);
+      const MyDCConPage = (props) => {
+        const { cons, setCons } = props;
+
+        const sortCon = (item, move) => {
+          const index = cons.indexOf(item);
+
+          if (index + move < 0 || index + move >= cons.length) return;
+
+          const con = this.cons.splice(index, 1);
+          this.cons.splice(index + move, 0, con[0]);
+
+          setCons([...this.cons]);
+          saveData("DCCon", "cons", this.cons);
+        };
+
+        return React.createElement(
+          Display,
+          {},
+          React.createElement("div", { className: "cards" }, [
+            ...cons.map((item) =>
+              React.createElement("div", { className: "card" }, [
+                React.createElement("img", {
+                  src: DCConBaseURL + item.info.main_img_path,
+                  style: { borderRadius: 10 },
+                }),
+                React.createElement("div", { className: "card-content" }, [
+                  React.createElement("div", { style: { display: "flex" } }, [
+                    React.createElement("h1", { className: `${classes.text.h1} ${classes.text.defaultColor}` }, item.info.title),
+                    React.createElement("div", { style: { display: "flex" } }, [
+                      React.createElement(
+                        "svg",
+                        {
+                          width: 24,
+                          height: 24,
+                          viewBox: "0 0 24 24",
+                          className: classes.text.defaultColor,
+                          onClick: () => {
+                            sortCon(item, -1);
+                          },
+                        },
+                        React.createElement("path", { d: "M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z", fill: "currentColor" })
+                      ),
+                      React.createElement(
+                        "svg",
+                        {
+                          width: 24,
+                          height: 24,
+                          viewBox: "0 0 24 24",
+                          className: classes.text.defaultColor,
+                          onClick: () => {
+                            sortCon(item, 1);
+                          },
+                        },
+                        React.createElement("path", { d: "M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z", fill: "currentColor" })
+                      ),
+                    ]),
+                  ]),
+                  React.createElement("span", { className: classes.text.defaultColor, style: { marginTop: 5 } }, `${item.detail.length}개의 디시콘`),
+
+                  React.createElement(Button, {
+                    text: "제거",
+                    color: classes.button.colorRed,
+                    onClick: () => {
+                      this.cons.splice(this.cons.indexOf(item), 1);
+
+                      setCons([...this.cons]);
+                      saveData("DCCon", "cons", this.cons);
+                    },
+                    style: {
+                      marginLeft: "auto",
+                      marginTop: "auto",
+                    },
+                  }),
+                ]),
+              ])
+            ),
+          ])
+        );
+      };
+
+      const ShopPage = (props) => {
+        const { cons, setCons } = props;
         const [query, setQuery] = React.useState("");
         const [results, setResults] = React.useState([]);
 
-        return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } }, [
-          React.createElement(
-            Details,
-            { summary: "디시콘 리스트" },
-            React.createElement("div", { style: { marginTop: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 } }, [
-              ...cons.map((item) =>
-                React.createElement("div", { style: { display: "flex" } }, [
-                  React.createElement("img", {
-                    src: DCConBaseURL + item.info.main_img_path,
-                    style: { borderRadius: 10, width: 150, height: 150, marginRight: 10 },
-                  }),
-                  React.createElement("div", {}, [
-                    React.createElement("p", {}, item.info.title),
-                    React.createElement("p", {}, item.info.description),
-                    React.createElement(
-                      "button",
-                      {
-                        onClick: () => {
-                          this.cons.splice(this.cons.indexOf(item), 1);
+        const checkExist = (idx) => {
+          return cons.some((x) => x.info.package_idx === idx);
+        };
 
-                          setCons([...this.cons]);
-                          saveData("DCCon", "cons", this.cons);
-                        },
+        return React.createElement("div", { style: { backgroundColor: "var(--background-secondary)", borderRadius: 10 } }, [
+          React.createElement(
+            "div",
+            {
+              className: `${classes.flex.flex} ${classes.flex.horizontal} ${classes.flex.justifyStart} ${classes.flex.alignCenter} ${classes.flex.noWrap}`,
+              style: { flex: "1 1 auto" },
+            },
+            React.createElement(
+              "div",
+              {
+                className: `${classes.gutter.searchBar} ${classes.container.container} ${classes.container.medium}`,
+              },
+              React.createElement(
+                "div",
+                {
+                  className: classes.container.inner,
+                },
+                React.createElement("input", {
+                  className: classes.container.input,
+                  placeholder: "디시콘 검색하기",
+                  autofocus: true,
+                  value: query,
+                  onChange: (e) => setQuery(e.target.value),
+                  onKeyDown: async (e) => {
+                    if (e.keyCode === 13) {
+                      setResults(await getDCConSearchResult(query));
+                    }
+                  },
+                }),
+                React.createElement(
+                  "div",
+                  {
+                    className: `${classes.container.iconLayout} ${classes.container.medium} ${query ? classes.container.pointer : ""}`,
+                    tabindex: "-1",
+                    role: "button",
+                    onClick: async () => setResults(await getDCConSearchResult(query)),
+                    style: { marginRight: 7 },
+                  },
+                  React.createElement(
+                    "div",
+                    {
+                      className: classes.container.iconContainer,
+                    },
+                    React.createElement(
+                      "svg",
+                      {
+                        className: `${classes.container.clear} ${classes.container.visible}`,
+                        "aria-hidden": false,
+                        width: "24",
+                        height: "24",
+                        viewBox: "0 0 24 24",
                       },
-                      "제거"
-                    ),
+                      React.createElement("path", {
+                        fill: "currentColor",
+                        d: "M21.707 20.293L16.314 14.9C17.403 13.504 18 11.799 18 10C18 7.863 17.167 5.854 15.656 4.344C14.146 2.832 12.137 2 10 2C7.863 2 5.854 2.832 4.344 4.344C2.833 5.854 2 7.863 2 10C2 12.137 2.833 14.146 4.344 15.656C5.854 17.168 7.863 18 10 18C11.799 18 13.504 17.404 14.9 16.314L20.293 21.706L21.707 20.293ZM10 16C8.397 16 6.891 15.376 5.758 14.243C4.624 13.11 4 11.603 4 10C4 8.398 4.624 6.891 5.758 5.758C6.891 4.624 8.397 4 10 4C11.603 4 13.109 4.624 14.242 5.758C15.376 6.891 16 8.398 16 10C16 11.603 15.376 13.11 14.242 14.243C13.109 15.376 11.603 16 10 16Z",
+                      })
+                    )
+                  )
+                )
+              )
+            )
+          ),
+
+          React.createElement(
+            Display,
+            {},
+            React.createElement("div", { className: "cards" }, [
+              ...results.map((item) =>
+                React.createElement("div", { className: "card" }, [
+                  React.createElement("img", {
+                    src: item.thumb,
+                    style: { borderRadius: 10 },
+                  }),
+                  React.createElement("div", { className: "card-content" }, [
+                    React.createElement("h1", { className: `${classes.text.h1} ${classes.text.defaultColor}` }, item.name),
+                    React.createElement("span", { className: classes.text.defaultColor, style: { marginTop: 5 } }, item.seller),
+
+                    React.createElement(Button, {
+                      text: "저장",
+                      disabled: checkExist(item.idx),
+                      onClick: async () => {
+                        this.cons.push(await getDCCon(item.idx));
+
+                        setCons([...this.cons]);
+                        saveData("DCCon", "cons", this.cons);
+                      },
+                      style: {
+                        marginLeft: "auto",
+                        marginTop: "auto",
+                      },
+                    }),
                   ]),
                 ])
               ),
             ])
           ),
+        ]);
+      };
 
-          React.createElement(
-            Details,
-            { summary: "디시콘 검색" },
-            React.createElement("div", { style: { display: "flex", flexDirection: "column" } }, [
-              React.createElement("input", { value: query, onChange: (e) => setQuery(e.target.value) }),
-              React.createElement(
-                "button",
-                {
-                  onClick: async () => {
-                    setResults(await getDCConSearchResult(query));
-                  },
-                },
-                "Search"
-              ),
-              React.createElement("div", { style: { marginTop: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 } }, [
-                ...results.map((item) =>
-                  React.createElement("div", { style: { display: "flex" } }, [
-                    React.createElement("img", { src: item.thumb, style: { borderRadius: 10, width: 100, height: 100, marginRight: 10 } }),
-                    React.createElement("div", {}, [
-                      React.createElement("p", {}, item.name),
-                      React.createElement("p", {}, item.seller),
-                      React.createElement(
-                        "button",
-                        {
-                          onClick: async () => {
-                            this.cons.push(await getDCCon(item.idx));
+      return React.createElement(() => {
+        const [cons, setCons] = React.useState(this.cons);
+        const [page, setPage] = React.useState("cons");
 
-                            setCons([...this.cons]);
-                            saveData("DCCon", "cons", this.cons);
-                          },
-                          disabled: cons.filter((x) => x.info.package_idx === item.idx).length !== 0,
-                        },
-                        "저장"
-                      ),
-                    ]),
-                  ])
-                ),
-              ]),
-            ])
-          ),
+        return React.createElement("div", {}, [
+          React.createElement("div", { className: classes.nav.list }, [
+            React.createElement(
+              "button",
+              {
+                className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "cons" ? classes.nav.active : ""}`,
+                onClick: () => setPage("cons"),
+              },
+              React.createElement("div", { className: classes.button.content }, "내 디시콘")
+            ),
+            React.createElement(
+              "button",
+              {
+                className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "shop" ? classes.nav.active : ""}`,
+                onClick: () => setPage("shop"),
+              },
+              React.createElement("div", { className: classes.button.content }, "디시콘샵")
+            ),
+            React.createElement(
+              "button",
+              {
+                className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "settings" ? classes.nav.active : ""}`,
+                onClick: () => setPage("settings"),
+              },
+              React.createElement("div", { className: classes.button.content }, "설정")
+            ),
+          ]),
+          React.createElement("div", { className: `${classes.divider.divider} ${classes.divider.dividerDefault}`, style: { marginBottom: 15 } }),
+
+          (() => {
+            switch (page) {
+              case "cons":
+                return React.createElement(MyDCConPage, { cons, setCons });
+              case "shop":
+                return React.createElement(ShopPage, { cons, setCons });
+              case "settings":
+                return React.createElement("div", {}, "나는 설정 페이지에요");
+            }
+          })(),
         ]);
       });
     }
