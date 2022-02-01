@@ -26,7 +26,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.3.2","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"version":"0.4.0","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"","github_raw":""},"changelog":[{"title":"0.1","items":["`0.1.0` 주요 기능들을 지원합니다"]},{"title":"0.2","items":["`0.2.0` Ctrl+D를 누르면 디시콘 페이지가 열립니다"]},{"title":"0.3","items":["`0.3.0` 디시콘을 보낼 때 Shift키를 누르고 있다면 창이 닫히지 않고 연속으로 보내집니다","`0.3.1` 최근 사용에서 콘이 중복되지 않습니다","`0.3.2` 창 사이즈에 따라 콘들의 간격이 늘어나지 않고 왼쪽에 붙어있게 됩니다"]},{"title":"0.4","items":["`0.4.0` 디시콘 검색 기능을 지원합니다"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -65,6 +65,49 @@ module.exports = (() => {
   const ExpressionPicker = WebpackModules.getModule((e) => e.type?.displayName === "ExpressionPicker");
   const { ScrollerAuto: Scroller } = WebpackModules.getByProps("ScrollerAuto");
   const request = require("request");
+
+  const class_modules = {
+    gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
+    _flex: WebpackModules.getByProps("_flex", "_horizontal", "_horizontalReverse"),
+    flex: WebpackModules.getByProps("flex", "alignStart", "alignEnd"),
+    container: WebpackModules.getByProps("container", "inner", "pointer"),
+    icon: WebpackModules.getByProps("icon", "visible", "richTag"),
+  };
+
+  const classes = {
+    gutter: {
+      header: class_modules.gutter.header,
+      backButton: class_modules.gutter.backButton,
+      searchHeader: class_modules.gutter.searchHeader,
+      searchBar: class_modules.gutter.searchBar,
+      content: class_modules.gutter.content,
+      container: class_modules.gutter.container,
+    },
+    flex: {
+      flex: class_modules._flex.flex,
+      horizontal: class_modules._flex.horizontal,
+      justifyStart: class_modules.flex.justifyStart,
+      alignCenter: class_modules.flex.alignCenter,
+      noWrap: class_modules.flex.noWrap,
+    },
+    container: {
+      container: class_modules.container.container,
+      medium: class_modules.container.medium,
+      inner: class_modules.container.inner,
+      input: class_modules.container.input,
+      iconLayout: class_modules.container.iconLayout,
+      iconContainer: class_modules.container.iconContainer,
+      pointer: class_modules.container.pointer,
+      clear: class_modules.container.clear,
+      visible: class_modules.container.visible,
+    },
+    search: {
+      icon: class_modules.icon.icon,
+      visible: class_modules.icon.visible,
+    },
+  };
+
+  window.WebpackModules = WebpackModules;
 
   const getDCCon = (idx) => {
     return new Promise((resolve, reject) => {
@@ -227,7 +270,6 @@ module.exports = (() => {
     const sendMedia = async (con, close = true) => {
       const image = await getDCConImage(con);
 
-      window.WebpackModules = WebpackModules;
       WebpackModules.getByProps("upload").instantBatchUpload(SelectedChannelStore.getChannelId(), [image], 0);
 
       if (close) {
@@ -270,9 +312,10 @@ module.exports = (() => {
       );
     }
 
-    const [categoryRefs, setCategoryRefs] = React.useState({});
-
     const expandData = loadData("DCCon", "expand");
+    const [categoryRefs, setCategoryRefs] = React.useState({});
+    const [query, setQuery] = React.useState("");
+
     const setExpanded = (idx, expanded) => {
       expandData[idx] = expanded;
       saveData("DCCon", "expand", expandData);
@@ -282,78 +325,164 @@ module.exports = (() => {
       setCategoryRefs((prev) => ({ ...prev, [idx]: func }));
     };
 
-    return React.createElement("div", { className: "bd-emote-menu", style: { display: "flex" } }, [
-      // Bar
+    const consFilter = (con) => {
+      return con.info.title.indexOf(query) !== -1 || con.detail.some((x) => x.title.indexOf(query) !== -1);
+    };
+
+    return React.createElement("div", { className: `${classes.gutter.container} fm-pickerContainer` }, [
+      // Header
       React.createElement(
         "div",
         {
-          className: "dccon-category-bar",
+          className: `${classes.gutter.header} fm-header`,
         },
-        [
+        React.createElement(
+          "div",
+          {
+            className: `${classes.flex.flex} ${classes.flex.horizontal} ${classes.flex.justifyStart} ${classes.flex.alignCenter} ${classes.flex.noWrap}`,
+            style: { flex: "1 1 auto" },
+          },
           React.createElement(
             "div",
-            { className: "dccon-category-item" },
-            React.createElement(RecentIcon, {
-              size: 45,
-              onClick: () => {
-                categoryRefs.recent.scrollIntoView();
-              },
-            })
-          ),
-          ...props.cons.map((item) =>
+            {
+              className: `${classes.gutter.searchBar} ${classes.container.container} ${classes.container.medium}`,
+            },
             React.createElement(
               "div",
               {
-                className: "dccon-category-item",
-                onClick: () => {
-                  categoryRefs[item.info.package_idx].scrollIntoView();
-                },
+                className: classes.container.inner,
               },
-              React.createElement("img", { src: DCConBaseURL + item.info.list_img_path, style: { borderRadius: 10 } })
+              React.createElement("input", {
+                className: classes.container.input,
+                placeholder: "디시콘 검색하기",
+                autofocus: true,
+                value: query,
+                onChange: (e) => setQuery(e.target.value),
+              }),
+              React.createElement(
+                "div",
+                {
+                  className: `${classes.container.iconLayout} ${classes.container.medium} ${query ? classes.container.pointer : ""}`,
+                  tabindex: "-1",
+                  role: "button",
+                  onClick: () => {
+                    setQuery("");
+                  },
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className: classes.container.iconContainer,
+                  },
+                  React.createElement(
+                    "svg",
+                    {
+                      className: `${classes.search.icon} ${query ? "" : ` ${classes.search.visible}`}`,
+                      "aria-hidden": false,
+                      width: "24",
+                      height: "24",
+                      viewBox: "0 0 24 24",
+                    },
+                    React.createElement("path", {
+                      fill: "currentColor",
+                      d: "M21.707 20.293L16.314 14.9C17.403 13.504 18 11.799 18 10C18 7.863 17.167 5.854 15.656 4.344C14.146 2.832 12.137 2 10 2C7.863 2 5.854 2.832 4.344 4.344C2.833 5.854 2 7.863 2 10C2 12.137 2.833 14.146 4.344 15.656C5.854 17.168 7.863 18 10 18C11.799 18 13.504 17.404 14.9 16.314L20.293 21.706L21.707 20.293ZM10 16C8.397 16 6.891 15.376 5.758 14.243C4.624 13.11 4 11.603 4 10C4 8.398 4.624 6.891 5.758 5.758C6.891 4.624 8.397 4 10 4C11.603 4 13.109 4.624 14.242 5.758C15.376 6.891 16 8.398 16 10C16 11.603 15.376 13.11 14.242 14.243C13.109 15.376 11.603 16 10 16Z",
+                    })
+                  ),
+                  React.createElement(
+                    "svg",
+                    {
+                      className: `${classes.container.clear} ${query ? ` ${classes.container.visible}` : ""}`,
+                      "aria-hidden": false,
+                      width: "24",
+                      height: "24",
+                      viewBox: "0 0 24 24",
+                    },
+                    React.createElement("path", {
+                      fill: "currentColor",
+                      d: "M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z",
+                    })
+                  )
+                )
+              )
             )
-          ),
-        ]
+          )
+        )
       ),
 
-      // Cons
-      React.createElement(
-        Scroller,
-        { className: "bd-emote-scroller" },
-        React.createElement("div", { className: "bd-emote-menu-inner", style: { padding: 10 } }, [
-          React.createElement(
-            Category,
-            {
-              label: "최근 사용",
-              icon: React.createElement(RecentIcon),
-              isCon: false,
-              idx: "recent",
-              expandData,
-              setExpanded,
-              categoryRef: (func) => {
-                categoryRef("recent", func);
-              },
-            },
-            React.createElement(ConMenu, { cons: loadData("DCCon", "recent") })
-          ),
-          ...props.cons.map((item) =>
+      // Body
+      React.createElement("div", { className: `bd-emote-menu ${classes.gutter.content} fm-pickerContent`, style: { display: "flex" } }, [
+        // Bar
+        React.createElement(
+          "div",
+          {
+            className: "dccon-category-bar",
+          },
+          [
+            React.createElement(
+              "div",
+              { className: "dccon-category-item" },
+              React.createElement(RecentIcon, {
+                size: 45,
+                onClick: () => {
+                  categoryRefs.recent.scrollIntoView();
+                },
+              })
+            ),
+            ...props.cons.filter(consFilter).map((item) =>
+              React.createElement(
+                "div",
+                {
+                  className: "dccon-category-item",
+                  onClick: () => {
+                    categoryRefs[item.info.package_idx].scrollIntoView();
+                  },
+                },
+                React.createElement("img", { src: DCConBaseURL + item.info.list_img_path, style: { borderRadius: 10 } })
+              )
+            ),
+          ]
+        ),
+
+        // Cons
+        React.createElement(
+          Scroller,
+          { className: "bd-emote-scroller" },
+          React.createElement("div", { className: "bd-emote-menu-inner", style: { padding: 10 } }, [
             React.createElement(
               Category,
               {
-                label: item.info.title,
-                iconPath: item.info.list_img_path,
-                isCon: true,
-                idx: item.info.package_idx,
+                label: "최근 사용",
+                icon: React.createElement(RecentIcon),
+                isCon: false,
+                idx: "recent",
                 expandData,
                 setExpanded,
                 categoryRef: (func) => {
-                  categoryRef(item.info.package_idx, func);
+                  categoryRef("recent", func);
                 },
               },
-              React.createElement(ConMenu, { cons: item.detail })
-            )
-          ),
-        ])
-      ),
+              React.createElement(ConMenu, { cons: loadData("DCCon", "recent") })
+            ),
+            ...props.cons.filter(consFilter).map((item) =>
+              React.createElement(
+                Category,
+                {
+                  label: item.info.title,
+                  iconPath: item.info.list_img_path,
+                  isCon: true,
+                  idx: item.info.package_idx,
+                  expandData,
+                  setExpanded,
+                  categoryRef: (func) => {
+                    categoryRef(item.info.package_idx, func);
+                  },
+                },
+                React.createElement(ConMenu, { cons: item.detail })
+              )
+            ),
+          ])
+        ),
+      ]),
     ]);
   };
 
