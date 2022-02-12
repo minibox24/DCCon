@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.0.0","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"정식 출시!","items":["BD 디시콘 플러그인이 완성되었습니다."]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.0.1","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 수정","items":["설정에서 디시콘 카드의 배경색을 테마에 맞게 변경했습니다."]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -626,7 +626,7 @@ module.exports = (() => {
 
         .card {
           display: flex;
-          background-color: var(--background-accent);
+          background-color: var(--background-tertiary);
           border-radius: 10px;
 
           width: 98%;
