@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.0.1","description":"디스코드에서 디시콘을 쉽게 쓸수 있게 도와주는 플러그인","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 수정","items":["설정에서 디시콘 카드의 배경색을 테마에 맞게 변경했습니다."]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.1.0","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"다국어 지원","items":["영어를 지원합니다."]},{"title":"버그 수정","type":"fixed","items":["마지막 줄의 콘들의 간격이 맞지 않는 버그를 수정했습니다."]},{"title":"English","type":"progress","items":["English has been added.","We fixed a bug that did not match the spacing of the cones in the last row."]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -61,7 +61,7 @@ module.exports = (() => {
     PluginUtilities,
     PluginUpdater,
     Modals,
-    DiscordModules: { React, SelectedChannelStore },
+    DiscordModules: { React, SelectedChannelStore, UserSettingsStore },
   } = Library;
 
   const DCConBaseURL = "https://dcimg5.dcinside.com/dccon.php?no=";
@@ -72,7 +72,68 @@ module.exports = (() => {
   const { toggleExpressionPicker } = WebpackModules.getByProps("toggleExpressionPicker");
   const { ScrollerAuto: Scroller } = WebpackModules.getByProps("ScrollerAuto");
 
-  window.WebpackModules = WebpackModules;
+  const texts = ((locale) => {
+  switch (locale) {
+    case "ko":
+      return {
+        tabName: {
+          dccon: "디시콘",
+          mydccon: "내 디시콘",
+          shop: "디시콘샵",
+          setting: "설정",
+        },
+        button: {
+          remove: "제거",
+          save: "저장",
+        },
+        setting: {
+          data: "데이터",
+          info: "정보",
+          saved: "저장된 디시콘: {0}개 (총 {1}개)",
+        },
+        modal: {
+          dataTitle: "모든 데이터 초기화",
+          dataDesc: "정말로 모든 디시콘 플러그인 데이터를 초기화할까요?",
+          recentTitle: "최근 사용 초기화",
+          recentDesc: "정말로 디시콘 최근 사용 기록을 초기화할까요?",
+        },
+        searchPlaceholder: "디시콘 검색하기",
+        recent: "최근 사용",
+        conCount: "{0}개의 디시콘",
+        blankPage: "플러그인 설정에서 디시콘을 추가해보세요!",
+      };
+    default:
+      return {
+        tabName: {
+          dccon: "DCCon",
+          mydccon: "My DCCon",
+          shop: "DCCon Shop",
+          setting: "Setting",
+        },
+        button: {
+          remove: "Remove",
+          save: "Save",
+        },
+        setting: {
+          data: "Data",
+          dataReset: "Reset all data",
+          recentReset: "Reser recently used",
+          info: "Info",
+          saved: "Saved DCCon: {0} (Total {1})",
+        },
+        modal: {
+          dataTitle: "Reset All Data",
+          dataDesc: "Are you really going to reset all DCCon datas?",
+          recentTitle: "Reset Recently Used Data",
+          recentDesc: "Are you really going to reset recetly used DCCon datas?",
+        },
+        searchPlaceholder: "Search DCCon",
+        recent: "Recently used",
+        conCount: "{0} DCCon",
+        blankPage: "Add DCCon on Plugin Setting",
+      };
+  }
+})(UserSettingsStore.locale);
 
   const class_modules = {
     gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
@@ -144,8 +205,6 @@ module.exports = (() => {
       dividerDefault: class_modules.divider2.dividerDefault,
     },
   };
-
-  window.WebpackModules = WebpackModules;
 
   const getDCCon = (idx) => {
     return new Promise((resolve, reject) => {
@@ -356,7 +415,7 @@ module.exports = (() => {
       return React.createElement(
         "div",
         { style: { display: "flex", alignItems: "center", justifyContent: "center" } },
-        React.createElement("span", { style: { color: "#FFF", fontSize: "1.5rem", fontWeight: "bold" } }, "플러그인 설정에서 디시콘을 추가해보세요!")
+        React.createElement("span", { style: { color: "#FFF", fontSize: "1.5rem", fontWeight: "bold" } }, texts.blankPage)
       );
     }
 
@@ -402,7 +461,7 @@ module.exports = (() => {
               },
               React.createElement("input", {
                 className: classes.container.input,
-                placeholder: "디시콘 검색하기",
+                placeholder: texts.searchPlaceholder,
                 autofocus: true,
                 value: query,
                 onChange: (e) => setQuery(e.target.value),
@@ -500,7 +559,7 @@ module.exports = (() => {
             React.createElement(
               Category,
               {
-                label: "최근 사용",
+                label: texts.recent,
                 icon: React.createElement(RecentIcon),
                 isCon: false,
                 idx: "recent",
@@ -574,14 +633,13 @@ module.exports = (() => {
         }
 
         .dccon-category {
-          display: flex;
-          flex-flow: row wrap;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, 110px);
           justify-content: space-between;
         }
 
-        .dccon-category::after {
-          content: "";
-          flex: auto;
+        .dccon-category :first-child {
+          grid-column: 1 / -1;
         }
         
         .dccon-category-bar {
@@ -707,7 +765,7 @@ module.exports = (() => {
                   viewType: "dccon",
                   isActive: activeMediaPicker === "dccon",
                 },
-                "디시콘"
+                texts.tabName.dccon
               )
             );
 
@@ -788,10 +846,14 @@ module.exports = (() => {
                       ),
                     ]),
                   ]),
-                  React.createElement("span", { className: classes.text.defaultColor, style: { marginTop: 5 } }, `${item.detail.length}개의 디시콘`),
+                  React.createElement(
+                    "span",
+                    { className: classes.text.defaultColor, style: { marginTop: 5 } },
+                    texts.conCount.replace("{0}", item.detail.length)
+                  ),
 
                   React.createElement(Button, {
-                    text: "제거",
+                    text: texts.button.remove,
                     color: classes.button.colorRed,
                     onClick: () => {
                       this.cons.splice(this.cons.indexOf(item), 1);
@@ -839,7 +901,7 @@ module.exports = (() => {
                 },
                 React.createElement("input", {
                   className: classes.container.input,
-                  placeholder: "디시콘 검색하기",
+                  placeholder: texts.searchPlaceholder,
                   autofocus: true,
                   value: query,
                   onChange: (e) => setQuery(e.target.value),
@@ -898,7 +960,7 @@ module.exports = (() => {
                     React.createElement("span", { className: classes.text.defaultColor, style: { marginTop: 5 } }, item.seller),
 
                     React.createElement(Button, {
-                      text: "저장",
+                      text: texts.button.save,
                       disabled: checkExist(item.idx),
                       onClick: async () => {
                         this.cons.push(await getDCCon(item.idx));
@@ -924,11 +986,11 @@ module.exports = (() => {
           React.createElement("div", {}, [
             React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, "데이터"),
             React.createElement(Button, {
-              text: "모든 데이터 초기화",
+              text: texts.modal.dataTitle,
               color: classes.button.colorRed,
               style: { width: 200 },
               onClick: () => {
-                Modals.showConfirmationModal("모든 데이터 초기화", "정말로 모든 디시콘 플러그인 데이터를 초기화할까요?", {
+                Modals.showConfirmationModal(texts.modal.dataTitle, texts.modal.dataDesc, {
                   danger: true,
                   onConfirm: () => {
                     this.cons = [];
@@ -942,11 +1004,11 @@ module.exports = (() => {
               },
             }),
             React.createElement(Button, {
-              text: "최근 사용 초기화",
+              text: texts.modal.recentTitle,
               color: classes.button.colorRed,
               style: { width: 200, marginTop: 10 },
               onClick: () => {
-                Modals.showConfirmationModal("최근 사용 초기화", "정말로 디시콘 최근 사용 기록을 초기화할까요?", {
+                Modals.showConfirmationModal(texts.modal.recentTitle, texts.modal.recentDesc, {
                   danger: true,
                   onConfirm: () => {
                     saveData("DCCon", "recent", []);
@@ -960,9 +1022,9 @@ module.exports = (() => {
             React.createElement(
               "div",
               { className: classes.text.defaultColor },
-              `저장된 디시콘: ${props.cons.length}개 (총 ${
-                props.cons.length === 0 ? 0 : props.cons.map((x) => x.detail.length).reduce((x, y) => x + y)
-              }개)`
+              texts.setting.saved
+                .replace("{0}", props.cons.length)
+                .replace("{1}", props.cons.length === 0 ? 0 : props.cons.map((x) => x.detail.length).reduce((x, y) => x + y))
             ),
           ]),
         ]);
@@ -980,7 +1042,7 @@ module.exports = (() => {
                 className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "cons" ? classes.nav.active : ""}`,
                 onClick: () => setPage("cons"),
               },
-              React.createElement("div", { className: classes.button.content }, "내 디시콘")
+              React.createElement("div", { className: classes.button.content }, texts.tabName.mydccon)
             ),
             React.createElement(
               "button",
@@ -988,7 +1050,7 @@ module.exports = (() => {
                 className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "shop" ? classes.nav.active : ""}`,
                 onClick: () => setPage("shop"),
               },
-              React.createElement("div", { className: classes.button.content }, "디시콘샵")
+              React.createElement("div", { className: classes.button.content }, texts.tabName.shop)
             ),
             React.createElement(
               "button",
@@ -996,7 +1058,7 @@ module.exports = (() => {
                 className: `${classes.nav.button} ${classes.nav.item} ${classes.button.button} ${page === "settings" ? classes.nav.active : ""}`,
                 onClick: () => setPage("settings"),
               },
-              React.createElement("div", { className: classes.button.content }, "설정")
+              React.createElement("div", { className: classes.button.content }, texts.tabName.setting)
             ),
           ]),
           React.createElement("div", { className: `${classes.divider.divider} ${classes.divider.dividerDefault}`, style: { marginBottom: 15 } }),
