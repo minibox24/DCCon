@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.1.0","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"다국어 지원","items":["영어를 지원합니다."]},{"title":"버그 수정","type":"fixed","items":["마지막 줄의 콘들의 간격이 맞지 않는 버그를 수정했습니다."]},{"title":"English","type":"progress","items":["English has been added.","We fixed a bug that did not match the spacing of the cones in the last row."]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.1.1","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 수정","type":"fixed","items":["`Ctrl+D` 단축키가 작동하지 않는 버그를 수정했습니다."]},{"title":"English","type":"progress","items":["We fixed the bug that the `Ctrl+D` shortcut does not work."]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -70,6 +70,7 @@ module.exports = (() => {
 
   const ExpressionPicker = WebpackModules.getModule((e) => e.type?.displayName === "ExpressionPicker");
   const { toggleExpressionPicker } = WebpackModules.getByProps("toggleExpressionPicker");
+  const toggleExpressionPickerParam = WebpackModules.getByProps("ChatInputTypes").ChatInputTypes.NORMAL;
   const { ScrollerAuto: Scroller } = WebpackModules.getByProps("ScrollerAuto");
 
   const texts = ((locale) => {
@@ -1087,7 +1088,7 @@ module.exports = (() => {
       if (e.which == 68) this.pressed.d = true;
 
       if (this.pressed.ctrl && this.pressed.d) {
-        toggleExpressionPicker("dccon", "normal");
+        toggleExpressionPicker("dccon", toggleExpressionPickerParam);
       }
     };
   };
