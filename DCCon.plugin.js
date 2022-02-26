@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.0","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"디시콘 아이콘 추가","items":["채팅 입력 창 스티커 버튼과 이모지 버튼 사이에 디시콘 만두 버튼이 추가되었습니다. 이 버튼을 누르면 디시콘 창이 나오게 됩니다."]},{"title":"단축키 제거","type":"fixed","items":["`Ctrl+D` 단축키를 잦은 버그로 인해 삭제하였습니다."]},{"title":"English","type":"progress","items":["Added DCCon button.","Removed `Ctrl+D` shortcut"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.1","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"디시콘 아이콘 추가","items":["채팅 입력 창 스티커 버튼과 이모지 버튼 사이에 디시콘 만두 버튼이 추가되었습니다. 이 버튼을 누르면 디시콘 창이 나오게 됩니다.","설정에서 디시콘 버튼을 켜고 끌 수 있습니다."]},{"title":"단축키 제거","type":"fixed","items":["`Ctrl+D` 단축키를 잦은 버그로 인해 삭제하였습니다."]},{"title":"English","type":"progress","items":["Added DCCon button.","You can turn the button on/off in settings","Removed `Ctrl+D` shortcut","Fixed some phrases that were not translated in the settings page."]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -61,7 +61,8 @@ module.exports = (() => {
     PluginUtilities,
     PluginUpdater,
     Modals,
-    DiscordModules: { React, SelectedChannelStore, UserSettingsStore, UserStore, ChannelStore, Dispatcher, Permissions },
+    DiscordModules,
+    DiscordModules: { React, SelectedChannelStore, UserSettingsStore, UserStore, ChannelStore, Dispatcher, Permissions, ReactDOM },
   } = Library;
 
   const DCConBaseURL = "https://dcimg5.dcinside.com/dccon.php?no=";
@@ -91,8 +92,10 @@ module.exports = (() => {
           save: "저장",
         },
         setting: {
+          button: "버튼",
           data: "데이터",
           info: "정보",
+          btnText: "디시콘 버튼",
           saved: "저장된 디시콘: {0}개 (총 {1}개)",
         },
         modal: {
@@ -119,10 +122,10 @@ module.exports = (() => {
           save: "Save",
         },
         setting: {
+          button: "Button",
           data: "Data",
-          dataReset: "Reset all data",
-          recentReset: "Reser recently used",
           info: "Info",
+          btnText: "DCCon Button",
           saved: "Saved DCCon: {0} (Total {1})",
         },
         modal: {
@@ -831,6 +834,10 @@ module.exports = (() => {
             -webkit-appearance: none;
             margin: 0;
         }
+
+        .noMarginBottom {
+          margin-bottom: 0;
+        }
       `
       );
 
@@ -844,6 +851,10 @@ module.exports = (() => {
 
       if (loadData("DCCon", "recent") === undefined) {
         saveData("DCCon", "recent", []);
+      }
+
+      if (loadData("DCCon", "hideButton") === undefined) {
+        saveData("DCCon", "hideButton", false);
       }
 
       this.cons = loadData("DCCon", "cons");
@@ -927,8 +938,10 @@ module.exports = (() => {
         } catch (_) {}
 
         if (!channel.type && !perms) return;
+
         const buttons = returnValue.props.children;
         if (!buttons || !Array.isArray(buttons)) return;
+        if (loadData("dccon", "hideButton")) return;
 
         buttons.splice(3, 0, React.createElement(DCConButton));
       });
@@ -1128,9 +1141,29 @@ module.exports = (() => {
       };
 
       const SettingPage = (props) => {
+        const [enabled, setEnabled] = React.useState(!loadData("dccon", "hideButton"));
+
         return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 20 } }, [
           React.createElement("div", {}, [
-            React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, "데이터"),
+            React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, texts.setting.button),
+
+            React.createElement(
+              DiscordModules.SwitchRow,
+              {
+                value: enabled,
+                onChange: (e) => {
+                  saveData("dccon", "hideButton", !e);
+                  setEnabled(e);
+                },
+                hideBorder: true,
+                className: "noMarginBottom",
+              },
+              React.createElement("div", { className: classes.text.defaultColor }, texts.setting.btnText)
+            ),
+          ]),
+
+          React.createElement("div", {}, [
+            React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, texts.setting.data),
             React.createElement(Button, {
               text: texts.modal.dataTitle,
               color: classes.button.colorRed,
@@ -1163,8 +1196,9 @@ module.exports = (() => {
               },
             }),
           ]),
+
           React.createElement("div", {}, [
-            React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, "정보"),
+            React.createElement("h5", { className: classes.text.h5, style: { marginBottom: 5 } }, texts.setting.info),
             React.createElement(
               "div",
               { className: classes.text.defaultColor },
