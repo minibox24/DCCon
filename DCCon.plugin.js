@@ -893,7 +893,6 @@ module.exports = (() => {
             );
 
             body.push(React.createElement(DCConPage, { type: activeMediaPicker, cons: this.cons }));
-            // body.push(React.createElement("div", {}, "ads"));
           } catch (err) {
             Logger.error("Error in ExpressionPicker\n", err);
           }
@@ -914,7 +913,6 @@ module.exports = (() => {
 
     patchChannelTextArea() {
       Patcher.after(ChannelTextAreaButtons, "type", (_, __, returnValue) => {
-        console.log(returnValue);
         if (Utilities.getNestedProp(returnValue, "props.children.1.props.type") === "sidebar") return;
         if (!returnValue.props.children.some((el) => el.key === "sticker")) return;
 
