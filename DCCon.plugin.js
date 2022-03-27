@@ -284,6 +284,9 @@ module.exports = (() => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(body, "text/html");
 
+        if (doc.getElementsByClassName("dccon_search_none").length > 0)
+            resolve([]);
+
         resolve(
           [...doc.getElementsByClassName("link_product")].map((el) => {
             const idx = el.href.split("#")[1];
