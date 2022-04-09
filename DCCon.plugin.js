@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.1","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"디시콘 아이콘 추가","items":["채팅 입력 창 스티커 버튼과 이모지 버튼 사이에 디시콘 만두 버튼이 추가되었습니다. 이 버튼을 누르면 디시콘 창이 나오게 됩니다.","설정에서 디시콘 버튼을 켜고 끌 수 있습니다."]},{"title":"단축키 제거","type":"fixed","items":["`Ctrl+D` 단축키를 잦은 버그로 인해 삭제하였습니다."]},{"title":"English","type":"progress","items":["Added DCCon button.","You can turn the button on/off in settings","Removed `Ctrl+D` shortcut","Fixed some phrases that were not translated in the settings page."]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.2","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["디시콘이 보내지지 않는 빅 버그를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -141,6 +141,7 @@ module.exports = (() => {
       };
   }
 })(UserSettingsStore.locale);
+  const thumbCache = {};
 
   const class_modules = {
     gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
@@ -284,8 +285,7 @@ module.exports = (() => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(body, "text/html");
 
-        if (doc.getElementsByClassName("dccon_search_none").length > 0)
-            resolve([]);
+        if (doc.getElementsByClassName("dccon_search_none").length > 0) resolve([]);
 
         resolve(
           [...doc.getElementsByClassName("link_product")].map((el) => {
@@ -300,6 +300,55 @@ module.exports = (() => {
       });
     });
   };
+
+  // const getArcaConSearchResult = (query) => {
+  //   return new Promise((resolve, reject) => {
+  //     request.get(encodeURI("https://arca.live/e/?target=title&keyword=" + query), (err, _, body) => {
+  //       if (err) reject(err);
+
+  //       const parser = new DOMParser();
+  //       const doc = parser.parseFromString(body, "text/html");
+
+  //       resolve(
+  //         [...doc.getElementsByClassName("emoticon")].map((el) => {
+  //           const idx = el.parentElement.href.split("?")[0].split("/")[4];
+  //           const thumb = el.children[0].src;
+  //           const name = el.children[1].children[0].innerText;
+  //           const seller = el.children[1].children[2].innerText;
+
+  //           thumbCache[idx] = thumb;
+
+  //           return { idx, thumb, name, seller };
+  //         })
+  //       );
+  //     });
+  //   });
+  // };
+
+  // const getArcaCon = (idx) => {
+  //   return new Promise((resolve, reject) => {
+  //     request.get(encodeURI("https://arca.live/e/" + idx), (err, _, body) => {
+  //       if (err) reject(err);
+
+  //       const parser = new DOMParser();
+  //       const doc = parser.parseFromString(body, "text/html");
+
+  //       const cons = [...doc.getElementsByClassName("emoticon")].filter((e) => e.tagName === "IMG" || e.tagName === "VIDEO").map((e) => e.src);
+
+  //       const thumb = thumbCache[idx] ? thumbCache[idx] : cons[0];
+
+  //       const info = {
+  //         package_idx: idx.toString(),
+  //         title: doc.getElementsByClassName("article-head")[0].children[0].innerText.trim(),
+  //         main_img_path: thumb,
+  //         list_img_path: thumb,
+  //         isArca: true,
+  //       };
+
+  //       resolve({ info, cons });
+  //     });
+  //   });
+  // };
 
   const DownArrowIcon = (props) => {
     const size = props.size || "16px";
@@ -427,7 +476,7 @@ module.exports = (() => {
     const sendMedia = async (con, close = true) => {
       const image = await getDCConImage(con);
 
-      WebpackModules.getByProps("instantBatchUpload").upload(SelectedChannelStore.getChannelId(), image, 0, "", false, `dccon.${con.ext}`);
+      WebpackModules.getByProps("instantBatchUpload").upload({ channelId: SelectedChannelStore.getChannelId(), file: image });
 
       if (close) {
         closeExpressionPicker();
@@ -1044,6 +1093,15 @@ module.exports = (() => {
           return cons.some((x) => x.info.package_idx === idx);
         };
 
+        const search = async () => {
+          const res = [];
+
+          res.push(await getDCConSearchResult(query));
+          // res.push(await getArcaConSearchResult(query));
+
+          setResults(res.flat());
+        };
+
         return React.createElement("div", { style: { backgroundColor: "var(--background-secondary)", borderRadius: 10 } }, [
           React.createElement(
             "div",
@@ -1067,10 +1125,8 @@ module.exports = (() => {
                   autofocus: true,
                   value: query,
                   onChange: (e) => setQuery(e.target.value),
-                  onKeyDown: async (e) => {
-                    if (e.keyCode === 13) {
-                      setResults(await getDCConSearchResult(query));
-                    }
+                  onKeyDown: (e) => {
+                    if (e.keyCode === 13) search();
                   },
                 }),
                 React.createElement(
@@ -1079,7 +1135,7 @@ module.exports = (() => {
                     className: `${classes.container.iconLayout} ${classes.container.medium} ${query ? classes.container.pointer : ""}`,
                     tabindex: "-1",
                     role: "button",
-                    onClick: async () => setResults(await getDCConSearchResult(query)),
+                    onClick: search,
                     style: { marginRight: 7 },
                   },
                   React.createElement(
@@ -1116,6 +1172,7 @@ module.exports = (() => {
                   React.createElement("img", {
                     src: item.thumb,
                     style: { borderRadius: 10 },
+                    crossOrigin: "anonymous",
                   }),
                   React.createElement("div", { className: "card-content" }, [
                     React.createElement("h1", { className: `${classes.text.h1} ${classes.text.defaultColor}` }, item.name),
