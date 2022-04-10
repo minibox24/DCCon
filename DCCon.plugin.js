@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.2","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["디시콘이 보내지지 않는 빅 버그를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.3","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["디시콘이 보내지지 않는 빅 버그를 수정하였습니다","만두 버튼이 나오지 않는 버그를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -980,16 +980,15 @@ module.exports = (() => {
         if (!returnValue.props.children.some((el) => el.key === "sticker")) return;
 
         const channel = ChannelStore.getChannel(SelectedChannelStore.getChannelId());
-        let perms = true;
 
-        try {
-          perms = Permissions.can(PermissionsConstants.SEND_MESSAGES, channel, UserStore.getCurrentUser().id);
-        } catch (_) {}
-        try {
-          perms = Permissions.can(PermissionsConstants.SEND_MESSAGES, UserStore.getCurrentUser(), channel);
-        } catch (_) {}
-
-        if (!channel.type && !perms) return;
+        if (
+          !Permissions.can({
+            permission: PermissionsConstants.SEND_MESSAGES,
+            user: UserStore.getCurrentUser(),
+            context: channel,
+          })
+        )
+          return;
 
         const buttons = returnValue.props.children;
         if (!buttons || !Array.isArray(buttons)) return;
