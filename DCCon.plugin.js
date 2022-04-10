@@ -29,7 +29,7 @@
 @else@*/
 
 module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.3","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["디시콘이 보내지지 않는 빅 버그를 수정하였습니다","만두 버튼이 나오지 않는 버그를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]}],"main":"index.js"};
+    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.4","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["DM, 그룹에서 만두 버튼이 나오지 않는 버그를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]},{"title":"알림","type":"fixed","items":["미니월드 디스코드 서버에서 빠른 지원이 가능합니다 (버그나면 여기로 제보해주시면 된다는 뜻)","https://discord.gg/pbd2xXJ 공개 서버 살펴보기에서도 입장 가능"]}],"main":"index.js"};
 
     return !global.ZeresPluginLibrary ? class {
         constructor() {this._config = config;}
@@ -982,6 +982,8 @@ module.exports = (() => {
         const channel = ChannelStore.getChannel(SelectedChannelStore.getChannelId());
 
         if (
+          channel.type !== 1 &&
+          channel.type !== 3 &&
           !Permissions.can({
             permission: PermissionsConstants.SEND_MESSAGES,
             user: UserStore.getCurrentUser(),
