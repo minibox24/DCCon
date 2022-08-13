@@ -1,6 +1,9 @@
 /**
  * @name DCCon
- * @invite pbd2xXJ
+ * @description Plugin who help DCCon easler use discord
+ * @version 1.2.6
+ * @author yejun
+ * @authorId 310247242546151434
  * @website https://github.com/minibox24/DCCon
  * @source https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js
  */
@@ -27,32 +30,28 @@
     WScript.Quit();
 
 @else@*/
-
-module.exports = (() => {
-    const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.5","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["디시콘샵 메뉴에서 썸네일이 나오지 않는 문제를 수정하였습니다"]},{"title":"English","type":"progress","items":["edit bug"]},{"title":"알림","type":"fixed","items":["미니월드 디스코드 서버에서 빠른 지원이 가능합니다 (버그나면 여기로 제보해주시면 된다는 뜻)","https://discord.gg/pbd2xXJ 공개 서버 살펴보기에서도 입장 가능"]}],"main":"index.js"};
-
-    return !global.ZeresPluginLibrary ? class {
-        constructor() {this._config = config;}
-        getName() {return config.info.name;}
-        getAuthor() {return config.info.authors.map(a => a.name).join(", ");}
-        getDescription() {return config.info.description;}
-        getVersion() {return config.info.version;}
-        load() {
-            BdApi.showConfirmationModal("Library Missing", `The library plugin needed for ${config.info.name} is missing. Please click Download Now to install it.`, {
-                confirmText: "Download Now",
-                cancelText: "Cancel",
-                onConfirm: () => {
-                    require("request").get("https://rauenzi.github.io/BDPluginLibrary/release/0PluginLibrary.plugin.js", async (error, response, body) => {
-                        if (error) return require("electron").shell.openExternal("https://betterdiscord.net/ghdl?url=https://raw.githubusercontent.com/rauenzi/BDPluginLibrary/master/release/0PluginLibrary.plugin.js");
-                        await new Promise(r => require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0PluginLibrary.plugin.js"), body, r));
-                    });
-                }
+const config = {"info":{"name":"DCCon","authors":[{"name":"yejun","discord_id":"310247242546151434","github_username":"minibox24"}],"inviteCode":"pbd2xXJ","version":"1.2.6","description":"Plugin who help DCCon easler use discord","github":"https://github.com/minibox24/DCCon","github_raw":"https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js"},"changelog":[{"title":"버그 패치","items":["플러그인이 활성화되지 않는 문제를 해결했습니다"]},{"title":"English","type":"progress","items":["edit bug"]},{"title":"알림","type":"fixed","items":["미니월드 디스코드 서버에서 빠른 지원이 가능합니다 (버그나면 여기로 제보해주시면 된다는 뜻)","https://discord.gg/pbd2xXJ 공개 서버 살펴보기에서도 입장 가능"]}],"main":"index.js"};
+class Dummy {
+    constructor() {this._config = config;}
+    start() {}
+    stop() {}
+}
+ 
+if (!global.ZeresPluginLibrary) {
+    BdApi.showConfirmationModal("Library Missing", `The library plugin needed for ${config.info.name} is missing. Please click Download Now to install it.`, {
+        confirmText: "Download Now",
+        cancelText: "Cancel",
+        onConfirm: () => {
+            require("request").get("https://rauenzi.github.io/BDPluginLibrary/release/0PluginLibrary.plugin.js", async (error, response, body) => {
+                if (error) return require("electron").shell.openExternal("https://betterdiscord.app/Download?id=9");
+                await new Promise(r => require("fs").writeFile(require("path").join(BdApi.Plugins.folder, "0PluginLibrary.plugin.js"), body, r));
             });
         }
-        start() {}
-        stop() {}
-    } : (([Plugin, Api]) => {
-        const plugin = (Plugin, Library) => {
+    });
+}
+ 
+module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
+     const plugin = (Plugin, Library) => {
   const {
     Logger,
     Patcher,
@@ -62,7 +61,7 @@ module.exports = (() => {
     PluginUpdater,
     Modals,
     DiscordModules,
-    DiscordModules: { React, SelectedChannelStore, UserSettingsStore, UserStore, ChannelStore, Dispatcher, Permissions, ReactDOM },
+    DiscordModules: { React, SelectedChannelStore, LocaleManager, UserStore, ChannelStore, Dispatcher, Permissions },
   } = Library;
 
   const DCConBaseURL = "https://dcimg5.dcinside.com/dccon.php?no=";
@@ -140,8 +139,7 @@ module.exports = (() => {
         blankPage: "Add DCCon on Plugin Setting",
       };
   }
-})(UserSettingsStore.locale);
-  const thumbCache = {};
+})(LocaleManager._chosenLocale);
 
   const class_modules = {
     gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
@@ -1332,7 +1330,6 @@ module.exports = (() => {
     // };
   };
 };
-        return plugin(Plugin, Api);
-    })(global.ZeresPluginLibrary.buildPlugin(config));
-})();
+     return plugin(Plugin, Api);
+})(global.ZeresPluginLibrary.buildPlugin(config));
 /*@end@*/
