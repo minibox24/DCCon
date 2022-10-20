@@ -1,3 +1,9 @@
+고장난 플러그인 (먼 미래에는 고쳐지겠죠?)
+
+
+---
+
+
 # [다운로드](https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js) (Ctrl+S 눌러서 저장)
 
 # DCCon
