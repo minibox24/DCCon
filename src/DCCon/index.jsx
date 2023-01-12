@@ -6,7 +6,10 @@
  */
 
 module.exports = (Plugin, Library) => {
-  const TestComponent = require("test.js");
+  // #region imports
+
+  const ManduIcon = require("ManduIcon.js");
+  const DCConButton = require("DCConButton.js");
 
   const {
     WebpackModules,
@@ -43,6 +46,168 @@ module.exports = (Plugin, Library) => {
   );
 
   let ChannelTextAreaButtons;
+
+  // #endregion
+
+  // #region styles
+
+  const classModules = {
+    icon: WebpackModules.getByProps("hoverScale", "buttonWrapper", "button"),
+    menu: WebpackModules.getByProps("menu", "scroller", "colorDefault"),
+    result: WebpackModules.getByProps("desiredItemWidth", "results", "result"),
+    input: WebpackModules.getByProps("inputWrapper", "input", "focused"),
+    role: WebpackModules.getByProps("roleCircle"),
+    _gif: WebpackModules.getByProps(
+      "container",
+      "gifFavoriteButton",
+      "embedWrapper"
+    ),
+    gif: WebpackModules.getByProps("size", "gifFavoriteButton", "selected"),
+    image: WebpackModules.getByProps(
+      "flexCenter",
+      "imageWrapper",
+      "imageWrapperBackground"
+    ),
+    control: WebpackModules.getByProps("container", "labelRow", "control"),
+    category: WebpackModules.getByProps(
+      "container",
+      "categoryFade",
+      "categoryFadeBlurple"
+    ),
+    textarea: WebpackModules.getByProps(
+      "textAreaHeight",
+      "channelTextArea",
+      "highlighted"
+    ),
+    gutter: WebpackModules.getByProps("gutterSize", "container", "content"),
+    _flex: WebpackModules.getByProps(
+      "_flex",
+      "_horizontal",
+      "_horizontalReverse"
+    ),
+    flex: WebpackModules.getByProps("flex", "alignStart", "alignEnd"),
+    color: WebpackModules.getByProps("selectable", "strong", "colorStandard"),
+    size: WebpackModules.getByProps("size10", "size12", "size14"),
+    title: WebpackModules.getByProps("title", "h1", "h2"),
+    container: WebpackModules.getByProps("container", "inner", "pointer"),
+    scroller: WebpackModules.getByProps("scrollerBase", "thin", "fade"),
+    look: WebpackModules.getByProps(
+      "lowSaturationUnderline",
+      "button",
+      "lookFilled"
+    ),
+    audio: WebpackModules.getByProps(
+      "wrapper",
+      "wrapperAudio",
+      "wrapperPaused"
+    ),
+  };
+
+  const classes = {
+    icon: {
+      icon: classModules.icon.icon,
+      active: classModules.icon.active,
+      button: classModules.icon.button,
+      buttonWrapper: classModules.icon.buttonWrapper,
+    },
+    menu: {
+      item: classModules.menu.item,
+      labelContainer: classModules.menu.labelContainer,
+      label: classModules.menu.label,
+      colorDefault: classModules.menu.colorDefault,
+      focused: classModules.menu.focused,
+    },
+    result: {
+      result: classModules.result.result,
+      favButton: classModules.result.favButton,
+      emptyHints: classModules.result.emptyHints,
+      emptyHint: classModules.result.emptyHint,
+      emptyHintCard: classModules.result.emptyHintCard,
+      emptyHintFavorite: classModules.result.emptyHintFavorite,
+      emptyHintText: classModules.result.emptyHintText,
+      gif: classModules.result.gif,
+      endContainer: classModules.result.endContainer,
+    },
+    input: {
+      inputDefault: classModules.input.inputDefault,
+      inputWrapper: classModules.input.inputWrapper,
+    },
+    roleCircle: classModules.role.roleCircle,
+    gif: {
+      gifFavoriteButton1: classModules._gif.gifFavoriteButton,
+      size: classModules.gif.size,
+      gifFavoriteButton2: classModules.gif.gifFavoriteButton,
+      selected: classModules.gif.selected,
+      showPulse: classModules.gif.showPulse,
+      icon: classModules.gif.icon,
+    },
+    image: {
+      imageAccessory: classModules.image.imageAccessory,
+      clickable: classModules.image.clickable,
+      embedWrapper: classModules._gif.embedWrapper,
+      imageWrapper: classModules.image.imageWrapper,
+    },
+    control: classModules.control.control,
+    category: {
+      categoryFade: classModules.category.categoryFade,
+      categoryText: classModules.category.categoryText,
+      categoryName: classModules.category.categoryName,
+      categoryIcon: classModules.category.categoryIcon,
+      container: classModules.category.container,
+    },
+    textarea: {
+      textAreaSlate: classModules.textarea.textAreaSlate,
+      buttonContainer: classModules.textarea.buttonContainer,
+      button: classModules.textarea.button,
+    },
+    gutter: {
+      header: classModules.gutter.header,
+      backButton: classModules.gutter.backButton,
+      searchHeader: classModules.gutter.searchHeader,
+      searchBar: classModules.gutter.searchBar,
+      content: classModules.gutter.content,
+      container: classModules.gutter.container,
+    },
+    flex: {
+      flex: classModules._flex.flex,
+      horizontal: classModules._flex.horizontal,
+      justifyStart: classModules.flex.justifyStart,
+      alignCenter: classModules.flex.alignCenter,
+      noWrap: classModules.flex.noWrap,
+    },
+    colorStandard: classModules.color.colorStandard,
+    size14: classModules.size.size14,
+    h5: classModules.title.h5,
+    container: {
+      container: classModules.container.container,
+      medium: classModules.container.medium,
+      inner: classModules.container.inner,
+      input: classModules.container.input,
+      iconLayout: classModules.container.iconLayout,
+      iconContainer: classModules.container.iconContainer,
+      pointer: classModules.container.pointer,
+      clear: classModules.container.clear,
+      visible: classModules.container.visible,
+    },
+    scroller: {
+      thin: classModules.scroller.thin,
+      scrollerBase: classModules.scroller.scrollerBase,
+      fade: classModules.scroller.fade,
+      content: classModules.scroller.content,
+    },
+    look: {
+      button: classModules.look.button,
+      lookBlank: classModules.look.lookBlank,
+      colorBrand: classModules.look.colorBrand,
+      grow: classModules.look.grow,
+      contents: classModules.look.contents,
+    },
+    audio: {
+      wrapperAudio: classModules.audio.wrapperAudio,
+    },
+  };
+
+  // #endregion
 
   // https://github.com/Strencher/BetterDiscordStuff/blob/master/InvisibleTyping/InvisibleTyping.plugin.js#L483-L494
   function loadChannelTextAreaButtons() {
@@ -109,7 +274,7 @@ module.exports = (Plugin, Library) => {
         const buttons = returnValue.props.children;
         if (!buttons || !Array.isArray(buttons)) return;
 
-        buttons.push(TestComponent());
+        buttons.push(React.createElement(DCConButton));
 
         Logger.log(buttons);
       });
