@@ -2,13 +2,27 @@
   "name": "dccon",
   "version": "2.0.0",
   "scripts": {
-    "build": "zpl build DCCon",
+    "build": "npm run build:babel && npm run build:zpl",
+    "build:babel": "babel src -d dist --copy-files",
+    "build:zpl": "zpl build DCCon",
     "init": "zpl init"
   },
   "repository": "https://github.com/minibox24/DCCon",
   "author": "minibox24 <minibox724@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/plugin-transform-modules-commonjs": "^7.20.11",
+    "@babel/preset-react": "^7.18.6",
+    "babel-plugin-add-module-exports": "^1.0.4",
+    "react": "^18.2.0",
     "zerespluginlibrary": "^2.0.6"
+  },
+  "zplConfig": {
+    "base": "./dist",
+    "out": "./release",
+    "copyToBD": true,
+    "addInstallScript": true
   }
 }
