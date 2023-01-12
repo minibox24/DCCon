@@ -1,12 +1,7 @@
-고장난 플러그인 (먼 미래에는 고쳐지겠죠?)
-
-
----
-
-
 # [다운로드](https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js) (Ctrl+S 눌러서 저장)
 
-# DCCon
+# DCCon (v2, WIP)
+
 BetterDiscord에서 디시콘을 쉽게 사용할 수 있게 돕는 플러그인입니다.
 
 ---

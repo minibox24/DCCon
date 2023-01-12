@@ -1,0 +1,13 @@
+{
+  "main": "index.js",
+  "name": "DCCon",
+  "author": "yejun",
+  "authorId": "310247242546151434",
+  "version": "2.0.0",
+  "description": "Plugin who help DCCon easler use discord",
+  "source": "https://github.com/minibox24/DCCon",
+  "github_raw": "",
+  "invite": "pbd2xXJ",
+  "changelog": [],
+  "defaultConfig": []
+}

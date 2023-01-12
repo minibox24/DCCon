@@ -1,0 +1,14 @@
+{
+  "name": "dccon",
+  "version": "2.0.0",
+  "scripts": {
+    "build": "zpl build DCCon",
+    "init": "zpl init"
+  },
+  "repository": "https://github.com/minibox24/DCCon",
+  "author": "minibox24 <minibox724@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "zerespluginlibrary": "^2.0.6"
+  }
+}
