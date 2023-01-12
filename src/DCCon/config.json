@@ -6,7 +6,7 @@
   "version": "2.0.0",
   "description": "Plugin who help DCCon easler use discord",
   "source": "https://github.com/minibox24/DCCon",
-  "github_raw": "",
+  "github_raw": "https://raw.githubusercontent.com/minibox24/DCCon/v2/release/DCCon.plugin.js",
   "invite": "pbd2xXJ",
   "changelog": [],
   "defaultConfig": []
