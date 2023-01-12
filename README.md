@@ -1,4 +1,4 @@
-# [다운로드](https://raw.githubusercontent.com/minibox24/DCCon/main/DCCon.plugin.js) (Ctrl+S 눌러서 저장)
+# [다운로드](https://raw.githubusercontent.com/minibox24/DCCon/v2/release/DCCon.plugin.js) (Ctrl+S 눌러서 저장)
 
 # DCCon (v2, WIP)
 
