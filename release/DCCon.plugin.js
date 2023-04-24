@@ -95,18 +95,27 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
     setActive(active);
   };
   React.useEffect(() => {
-    Dispatcher.subscribe("DCCON_ACTIVE", changeActive);
+    Dispatcher.subscribe("DCCON_CALL", changeActive);
     return () => {
-      Dispatcher.unsubscribe("DCCON_ACTIVE", changeActive);
+      Dispatcher.unsubscribe("DCCON_CALL", changeActive);
     };
   }, []);
   return /*#__PURE__*/React.createElement("div", {
     className: classes.textarea.buttonContainer
   }, /*#__PURE__*/React.createElement("button", {
     className: `${classes.look.button} ${classes.look.lookBlank} ${classes.look.colorBrand} ${classes.look.grow}`,
-    tabIndex: "0"
+    tabIndex: "0",
+    onClick: () => {
+      Dispatcher.dispatch({
+        type: "DCCON_CALL",
+        active: !active
+      });
+    }
   }, /*#__PURE__*/React.createElement("div", {
-    className: `${classes.look.contents} ${classes.textarea.button} ${classes.icon.button}`
+    className: `${classes.look.contents} ${classes.textarea.button} ${classes.icon.button}`,
+    style: active ? {
+      color: "white"
+    } : null
   }, /*#__PURE__*/React.createElement("div", {
     className: `${classes.icon.buttonWrapper}`,
     style: {
@@ -148,6 +157,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
     searchExports: true
   });
   let ChannelTextAreaButtons;
+  const ExpressionPicker = {};
 
   // #endregion
 
@@ -282,7 +292,6 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
 
   // #endregion
 
-  // https://github.com/Strencher/BetterDiscordStuff/blob/master/InvisibleTyping/InvisibleTyping.plugin.js#L483-L494
   function loadChannelTextAreaButtons() {
     const buttonsClassName = WebpackModules.getByProps("profileBioInput", "buttons")?.buttons;
     const vnode = ReactTools.getReactInstance(document.querySelector(`.${buttonsClassName}`));
@@ -296,12 +305,33 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
       }
     }
   }
+  function loadExpressionPicker() {
+    const modules = Webpack.getModule(m => Object.keys(m).some(key => m[key]?.toString?.().includes("isSearchSuggestion")));
+    if (modules == null) return;
+    Object.values(modules).forEach(fn => {
+      const code = String(fn);
+      if (code.includes("useDebugValue") && fn.getState) {
+        ExpressionPicker.useExpressionPickerStore = fn;
+      } else if (code.includes("===")) {
+        ExpressionPicker.toggleExpressionPicker = fn;
+      } else if (code.includes("activeView:null,activeViewType:null")) {
+        ExpressionPicker.closeExpressionPicker = fn;
+      }
+    });
+  }
+  function loadModules() {
+    loadChannelTextAreaButtons();
+    // loadExpressionPicker();
+  }
+
   return class extends Plugin {
     onStart() {
       Logger.info("Plugin enabled!");
+      loadModules();
       this.patchChannelTextArea();
     }
     onStop() {
+      Patcher.unpatchAll();
       Logger.info("Plugin disabled!");
     }
     patchChannelTextArea() {
@@ -319,7 +349,6 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
         const buttons = returnValue.props.children;
         if (!buttons || !Array.isArray(buttons)) return;
         buttons.push(React.createElement(DCConButton));
-        Logger.log(buttons);
       });
     }
   };

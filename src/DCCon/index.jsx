@@ -209,7 +209,6 @@ module.exports = (Plugin, Library) => {
 
   // #endregion
 
-  // https://github.com/Strencher/BetterDiscordStuff/blob/master/InvisibleTyping/InvisibleTyping.plugin.js#L483-L494
   function loadChannelTextAreaButtons() {
     const buttonsClassName = WebpackModules.getByProps(
       "profileBioInput",
@@ -242,10 +241,13 @@ module.exports = (Plugin, Library) => {
     onStart() {
       Logger.info("Plugin enabled!");
 
+      loadChannelTextAreaButtons();
       this.patchChannelTextArea();
     }
 
     onStop() {
+      Patcher.unpatchAll();
+
       Logger.info("Plugin disabled!");
     }
 
@@ -275,8 +277,6 @@ module.exports = (Plugin, Library) => {
         if (!buttons || !Array.isArray(buttons)) return;
 
         buttons.push(React.createElement(DCConButton));
-
-        Logger.log(buttons);
       });
     }
   };

@@ -6,10 +6,10 @@ const DCConButton = () => {
   };
 
   React.useEffect(() => {
-    Dispatcher.subscribe("DCCON_ACTIVE", changeActive);
+    Dispatcher.subscribe("DCCON_CALL", changeActive);
 
     return () => {
-      Dispatcher.unsubscribe("DCCON_ACTIVE", changeActive);
+      Dispatcher.unsubscribe("DCCON_CALL", changeActive);
     };
   }, []);
 
@@ -18,9 +18,19 @@ const DCConButton = () => {
       <button
         className={`${classes.look.button} ${classes.look.lookBlank} ${classes.look.colorBrand} ${classes.look.grow}`}
         tabIndex="0"
+        onClick={() => {
+          Dispatcher.dispatch({ type: "DCCON_CALL", active: !active });
+        }}
       >
         <div
           className={`${classes.look.contents} ${classes.textarea.button} ${classes.icon.button}`}
+          style={
+            active
+              ? {
+                  color: "white",
+                }
+              : null
+          }
         >
           <div
             className={`${classes.icon.buttonWrapper}`}
