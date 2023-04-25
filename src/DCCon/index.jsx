@@ -8,8 +8,21 @@
 module.exports = (Plugin, Library) => {
   // #region imports
 
-  const ManduIcon = require("ManduIcon.js");
   const DCConButton = require("DCConButton.js");
+  const DCConMain = require("DCConMain.js");
+
+  const DCConHeader = require("DCConHeader.js");
+
+  const ManduIcon = require("icons-Mandu.js");
+  const ArrowLeft = require("icons-ArrowLeft.js");
+  const ArrowRight = require("icons-ArrowRight.js");
+  const HomeDisabled = require("icons-HomeDisabled.js");
+  const HomeEnabled = require("icons-HomeEnabled.js");
+  const MenuDisabled = require("icons-MenuDisabled.js");
+  const MenuEnabled = require("icons-MenuEnabled.js");
+  const SettingDisabled = require("icons-SettingDisabled.js");
+  const SettingEnabled = require("icons-SettingEnabled.js");
+  const Smile = require("icons-Smile.js");
 
   const {
     WebpackModules,
@@ -25,6 +38,7 @@ module.exports = (Plugin, Library) => {
     Logger,
     DiscordModules: {
       React,
+      ReactDOM,
       ElectronModule,
       Dispatcher,
       LocaleManager,
@@ -237,47 +251,60 @@ module.exports = (Plugin, Library) => {
     }
   }
 
+  function patchChannelTextArea() {
+    loadChannelTextAreaButtons();
+    if (ChannelTextAreaButtons == null) return;
+
+    Patcher.after(ChannelTextAreaButtons, "type", (_, __, returnValue) => {
+      if (
+        Utilities.getNestedProp(returnValue, "props.children.1.props.type") ===
+        "sidebar"
+      )
+        return;
+
+      const channel = ChannelStore.getChannel(
+        SelectedChannelStore.getChannelId()
+      );
+      const perms = Permissions.can({
+        permission: PermissionsConstants.SEND_MESSAGES,
+        user: UserStore.getCurrentUser(),
+        context: channel,
+      });
+      if (!channel.type && !perms) return;
+      const buttons = returnValue.props.children;
+      if (!buttons || !Array.isArray(buttons)) return;
+
+      buttons.push(React.createElement(DCConButton));
+    });
+  }
+
+  function initDCCon() {
+    let dccon = document.getElementById("dccon-container");
+
+    if (!dccon) {
+      dccon = document.createElement("div");
+      dccon.id = "dccon-container";
+
+      document.body.appendChild(dccon);
+    }
+
+    const root = ReactDOM.createRoot(dccon);
+    root.render(React.createElement(DCConMain));
+  }
+
   return class extends Plugin {
     onStart() {
       Logger.info("Plugin enabled!");
 
       loadChannelTextAreaButtons();
-      this.patchChannelTextArea();
+      patchChannelTextArea();
+      initDCCon();
     }
 
     onStop() {
       Patcher.unpatchAll();
 
       Logger.info("Plugin disabled!");
-    }
-
-    patchChannelTextArea() {
-      loadChannelTextAreaButtons();
-      if (ChannelTextAreaButtons == null) return;
-
-      Patcher.after(ChannelTextAreaButtons, "type", (_, __, returnValue) => {
-        if (
-          Utilities.getNestedProp(
-            returnValue,
-            "props.children.1.props.type"
-          ) === "sidebar"
-        )
-          return;
-
-        const channel = ChannelStore.getChannel(
-          SelectedChannelStore.getChannelId()
-        );
-        const perms = Permissions.can({
-          permission: PermissionsConstants.SEND_MESSAGES,
-          user: UserStore.getCurrentUser(),
-          context: channel,
-        });
-        if (!channel.type && !perms) return;
-        const buttons = returnValue.props.children;
-        if (!buttons || !Array.isArray(buttons)) return;
-
-        buttons.push(React.createElement(DCConButton));
-      });
     }
   };
 };
