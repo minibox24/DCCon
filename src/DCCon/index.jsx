@@ -12,6 +12,7 @@ module.exports = (Plugin, Library) => {
   const DCConMain = require("DCConMain.js");
 
   const DCConHeader = require("DCConHeader.js");
+  const DCConSelector = require("DCConSelector.js");
 
   const ManduIcon = require("icons-Mandu.js");
   const ArrowLeft = require("icons-ArrowLeft.js");

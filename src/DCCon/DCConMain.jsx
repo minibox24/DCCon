@@ -19,19 +19,20 @@ const DCConMain = (props) => {
     <div
       style={{
         zIndex: 2000,
-        width: 626,
-        height: 535,
+        width: 580,
+        height: 500,
         position: "fixed",
         bottom: 80,
         right: 16,
         backgroundColor: "#222222",
-        border: "1px solid #273272",
+        border: "2px solid #273272",
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
       }}
     >
       <DCConHeader />
+      <DCConSelector />
     </div>
   );
 };

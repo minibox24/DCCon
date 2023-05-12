@@ -72,12 +72,6 @@ const DCConHeader = (props) => {
               alt="원신 쳐다보는콘돚거"
             />
           </div>
-          <div>
-            <img
-              src="//dcimg5.dcinside.com/dccon.php?no=62b5df2be09d3ca567b1c5bc12d46b394aa3b1058c6e4d0ca41648b650e8276e944498ffa97f15561d4ad056d425d7b6c780800fe739d5d3b7b0f71cef6e54e4cad895baaf6711fddb7739"
-              alt="원신 쳐다보는콘돚거"
-            />
-          </div>
         </div>
 
         <div
